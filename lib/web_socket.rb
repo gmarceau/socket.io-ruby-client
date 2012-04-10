@@ -314,14 +314,14 @@ class WebSocket
       buffer = StringIO.new(force_encoding("", "ASCII-8BIT"))
       write_byte(buffer, 0x80 | opcode)
       masked_byte = mask ? 0x80 : 0x00
-      if payload.bytesize <= 125
-        write_byte(buffer, masked_byte | payload.bytesize)
-      elsif payload.bytesize < 2 ** 16
+      if payload.size <= 125
+        write_byte(buffer, masked_byte | payload.size)
+      elsif payload.size < 2 ** 16
         write_byte(buffer, masked_byte | 126)
-        buffer.write([payload.bytesize].pack("n"))
+        buffer.write([payload.size].pack("n"))
       else
         write_byte(buffer, masked_byte | 127)
-        buffer.write([payload.bytesize / (2 ** 32), payload.bytesize % (2 ** 32)].pack("NN"))
+        buffer.write([payload.size / (2 ** 32), payload.size % (2 ** 32)].pack("NN"))
       end
       if mask
         mask_key = Array.new(4){ rand(256) }
@@ -341,7 +341,7 @@ class WebSocket
     def read(num_bytes)
       str = @socket.read(num_bytes)
       $stderr.printf("recv> %p\n", str) if WebSocket.debug
-      if str && str.bytesize == num_bytes
+      if str && str.size == num_bytes
         return str
       else
         raise(EOFError)
